@@ -1,0 +1,40 @@
+services:
+  gnat-gui-backend:
+    image: ghcr.io/wrhalpin/gnat-gui-backend:${VERSION:-latest}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - GNAT_GUI_DB_URL=postgresql+psycopg2://gnat_gui:${POSTGRES_PASSWORD}@postgres/gnat_gui
+      - GNAT_GUI_SECRET_KEY=${SESSION_SECRET}
+      - GNAT_GUI_GNAT_CONFIG_PATH=${GNAT_CONFIG:-/etc/gnat/config.yml}
+      - GNAT_GUI_LLM_API_KEY=${LLM_API_KEY:-}
+    volumes:
+      - ${GNAT_CONFIG_PATH:-/etc/gnat}:/etc/gnat:ro
+    restart: unless-stopped
+
+  gnat-gui-frontend:
+    image: ghcr.io/wrhalpin/gnat-gui-frontend:${VERSION:-latest}
+    ports:
+      - "80:80"
+    depends_on:
+      - gnat-gui-backend
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16
+    environment:
+      - POSTGRES_USER=gnat_gui
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=gnat_gui
+    volumes:
+      - gnat-gui-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gnat_gui"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  gnat-gui-pgdata:

@@ -1,0 +1,37 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      - POSTGRES_USER=gnat_gui
+      - POSTGRES_PASSWORD=gnat_gui
+      - POSTGRES_DB=gnat_gui
+    ports:
+      - "5432:5432"
+    volumes:
+      - gnat-gui-dev-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gnat_gui"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    environment:
+      - GNAT_GUI_DB_URL=postgresql+psycopg2://gnat_gui:gnat_gui@postgres/gnat_gui
+      - GNAT_GUI_SECRET_KEY=dev-secret-not-for-production
+      - GNAT_GUI_DEBUG=true
+      - GNAT_GUI_CORS_ORIGINS=["http://localhost:5173"]
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: uvicorn gnat_gui.main:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  gnat-gui-dev-pgdata:
