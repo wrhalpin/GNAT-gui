@@ -1,17 +1,18 @@
-from fastapi import APIRouter, Depends, Response
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, Request, Response
 
-from gnat_gui.audit.service import AuditService
 from gnat_gui.auth.middleware import get_session_token
 from gnat_gui.auth.service import AuthService
 from gnat_gui.deps import Audit, CurrentUser, DB, SourceIP
+from gnat_gui.rate_limit import limiter
 from gnat_gui.schemas.auth import LoginRequest, MeResponse, SessionResponse
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
 @router.post("/login", response_model=SessionResponse)
+@limiter.limit("10/minute")
 def login(
+    request: Request,
     body: LoginRequest,
     response: Response,
     db: DB,

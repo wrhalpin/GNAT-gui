@@ -1,9 +1,11 @@
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class UserCreate(BaseModel):
+    model_config = ConfigDict(strict=True)
+
     username: str = Field(min_length=3, max_length=128)
     password: str = Field(min_length=12)
     role: str
@@ -18,6 +20,8 @@ class UserResponse(BaseModel):
 
 
 class UserUpdate(BaseModel):
+    model_config = ConfigDict(strict=True)
+
     role: str | None = None
     is_active: bool | None = None
 

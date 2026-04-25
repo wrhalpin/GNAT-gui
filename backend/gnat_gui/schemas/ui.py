@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class UIStateGet(BaseModel):
@@ -7,6 +7,8 @@ class UIStateGet(BaseModel):
 
 
 class UIStatePut(BaseModel):
+    model_config = ConfigDict(strict=True)
+
     value: dict
 
 
