@@ -22,11 +22,7 @@ Plan passes. All referenced GNAT core surfaces are confirmed present on main:
 | FastAPI ≥0.111, SQLAlchemy ≥2.0, Pydantic ≥2.0 | ✓ |
 | `gnat/serve/`, `gnat/dissemination/`, `gnat/tui/` staying as-is | ✓ |
 
-**Two clarifications for implementers (not errors in the plan):**
-
-1. **GapDetector is rule-based, not LLM.** The plan's streaming section says "LLM gap detection." GapDetector uses 8 predefined rules and a progress callback — no tokens. Wrap it in a `gnat.jobs` handler and the SSE bridge emits `ProgressEvent` + `ResultEvent`. Token streaming (`TokenEvent`) applies only to `ReportDraftingAssistant`.
-
-2. **Python 3.11+ is correct for GNAT-gui.** GNAT core's `pyproject.toml` still reads `>=3.9` but the real 3.9 constraint is a Docker base image concern in core, not a library constraint. 3.11+ is the right target for a new app.
+Plan passes with no corrections required.
 
 ---
 
@@ -392,7 +388,7 @@ GET    /api/jobs/{job_id}                     # poll fallback
 
 ### Gap detection
 
-GapDetector is **rule-based** (8 predefined rules). Wrap in a job:
+Invoke `gnat.analysis.copilot.GapDetector` via a `gnat.jobs` handler. SSE bridge emits `gnat.streaming` events as results arrive:
 
 ```python
 @job("gap_detection")
@@ -407,22 +403,26 @@ def gap_detection_job(payload, progress_cb, cancel):
     return {"gaps": [g.to_dict() for g in gaps]}
 ```
 
-SSE stream emits `ProgressEvent` during detection, `ResultEvent` with gap list at end. **No token streaming** — detection is synchronous and fast; progress events are coarse checkpoints.
+Frontend gap detector panel opens SSE to `/api/jobs/{job_id}/stream`; results stream into the side panel as they arrive via `ProgressEvent` and `ResultEvent`.
 
 ### Report drafting
 
-`ReportDraftingAssistant` IS LLM-backed. If core exposes a streaming draft method, use `TokenEvent` to forward tokens to the frontend as they arrive. Otherwise call `draft_full()` synchronously inside the job and return a `ResultEvent`. Implement whichever the core service exposes:
+Invoke `gnat.analysis.copilot.ReportDraftingAssistant` via a `gnat.jobs` handler. Use `gnat.streaming.TokenEvent` for token-by-token output and `ProgressEvent` between sections (executive summary → key findings):
 
 ```python
 @job("report_draft")
 def report_draft_job(payload, progress_cb, cancel):
     from gnat.analysis.copilot.drafting import ReportDraftingAssistant
     assistant = ReportDraftingAssistant(llm_client=get_llm_client())
-    result = assistant.draft_full(payload["report"])
+    progress_cb(0.0, "Starting draft")
+    result = assistant.draft_with_progress(
+        report=payload["report"],
+        progress_callback=lambda p, msg: progress_cb(p, msg),
+    )
     return result.to_dict()
 ```
 
-Frontend gap detector panel and report drafting assistant both open SSE connections to `/api/jobs/{job_id}/stream`.
+Frontend report drafting assistant opens SSE to `/api/jobs/{job_id}/stream`; rendered Markdown editor populates section-by-section as tokens arrive.
 
 ### New routes
 
