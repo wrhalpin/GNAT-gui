@@ -1,0 +1,44 @@
+title: GNAT-gui
+description: >-
+  Analyst-facing graphical interface for GNAT — FastAPI backend, React SPA,
+  investigation management, Hy/YAML/Prolog rules, seed-driven evidence graphs,
+  full RBAC, append-only audit, and real-time SSE streaming.
+  Documentation organised with the Diátaxis framework.
+
+theme: jekyll-theme-cayman
+
+plugins:
+  - jekyll-relative-links
+
+relative_links:
+  enabled:     true
+  collections: true
+
+show_downloads: false
+github:
+  repository_url: https://github.com/wrhalpin/GNAT-gui
+
+logo: /assets/logo/gnat-gui-logo.svg
+
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+
+# Apply the Cayman layout to every markdown page, including those
+# without explicit front matter, so the full docs tree inherits the theme.
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: "default"
+
+include:
+  - assets
+
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
