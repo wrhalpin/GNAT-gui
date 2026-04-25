@@ -1,7 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from starlette_csrf import CSRFMiddleware
 
 from gnat_gui.config import settings
+from gnat_gui.rate_limit import limiter
 from gnat_gui.routers import admin, analysis, auth, investigations, jobs, prefs, rules
 
 import gnat_gui.jobs as _job_handlers  # noqa: F401  registers @job handlers
@@ -14,6 +18,17 @@ def create_app() -> FastAPI:
         docs_url="/api/docs",
         redoc_url="/api/redoc",
         openapi_url="/openapi.json",
+    )
+
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+    # CSRF protection for all state-changing routes; exempt /api/auth/login
+    # (pre-auth, so no cookie yet) and SSE streams (GET).
+    app.add_middleware(
+        CSRFMiddleware,
+        secret=settings.secret_key,
+        exempt_urls=[r"^/api/auth/login$", r"^/api/jobs/"],
     )
 
     app.add_middleware(

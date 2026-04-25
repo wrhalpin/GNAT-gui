@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+.env
+*.db
+
+# Alembic
+backend/alembic/versions/*.pyc
+
+# Coverage
+.coverage
+htmlcov/
+coverage.xml
+
+# mypy
+.mypy_cache/
+
+# Node
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Generated — rebuilt on backend start
+frontend/src/api/generated.ts
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+test-results/
+playwright-report/
+*.db
+test.db
