@@ -1,0 +1,320 @@
+---
+---
+
+/*
+ * GNAT-gui — GitHub Pages stylesheet
+ * Palette: slate blue
+ * Apache 2.0
+ */
+
+// ── Brand palette ─────────────────────────────────────────────────────────────
+$primary-dark:    #1e3355;   // deep navy-slate — header, headings
+$primary:         #3b6ea8;   // steel blue — signature accent, links
+$primary-light:   #5b8db8;   // powder blue — secondary accents
+$primary-pale:    #d0e4f5;   // very light blue — borders, table headers
+$cloud:           #f4f8fc;   // off-white blue — card backgrounds
+$ink:             #1a2430;   // near-black — body text
+
+// ── Cayman theme variable overrides ──────────────────────────────────────────
+$header-bg-color:           $primary-dark;
+$header-bg-color-secondary: $primary;
+$section-headings-color:    $primary-dark;
+$link-color:                $primary;
+$blockquote-text-color:     mix($ink, $primary-pale, 55%);
+$code-bg-color:             $cloud;
+$border-color:              $primary-pale;
+$table-border-color:        mix($primary-pale, #fff, 70%);
+$hr-border-color:           $primary-pale;
+$body-link-color:           $primary;
+
+@import "jekyll-theme-cayman";
+
+// ── Base tweaks ───────────────────────────────────────────────────────────────
+.page-header {
+  background-image: linear-gradient(135deg, $primary-dark 0%, mix($primary-dark, $primary, 40%) 50%, $primary 100%);
+}
+
+a           { color: $primary; }
+a:hover     { color: darken($primary, 14%); text-decoration: underline; }
+
+pre, code {
+  border-left: 3px solid $primary;
+}
+
+.main-content table thead tr {
+  background-color: mix($primary-pale, #fff, 55%);
+}
+
+// ── GNAT-o-sphere product card grid ──────────────────────────────────────────
+.gnatophere-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1.25rem;
+  margin: 2rem 0;
+
+  .card {
+    border: 2px solid $primary-pale;
+    border-radius: 8px;
+    padding: 1.2rem 1.4rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    transition: box-shadow .2s ease, transform .15s ease;
+    background: #fff;
+
+    &:hover {
+      box-shadow: 0 5px 18px rgba(0,0,0,.13);
+      transform: translateY(-2px);
+    }
+
+    h4 {
+      margin: 0 0 .45rem;
+      font-size: 1rem;
+    }
+
+    p {
+      margin: 0 0 .9rem;
+      font-size: .88rem;
+      color: #555;
+      line-height: 1.45;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: .3em .85em;
+      border-radius: 4px;
+      font-size: .82rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background-color .15s ease, color .15s ease;
+      color: #fff;
+    }
+  }
+
+  // Per-product accent colours — keep in sync with the other GNAT Pages sites
+  .card-gnat {
+    border-color: #C41E2A;
+    h4 { color: #9e1222; }
+    .btn { background: #C41E2A; &:hover { background: darken(#C41E2A, 10%); color: #fff; } }
+  }
+  .card-gnatgui {
+    border-color: $primary;
+    h4 { color: $primary-dark; }
+    .btn { background: $primary; &:hover { background: darken($primary, 10%); color: #fff; } }
+  }
+  .card-sandgnat {
+    border-color: #D4A017;
+    h4 { color: #9a7310; }
+    .btn { background: #D4A017; &:hover { background: darken(#D4A017, 10%); color: #fff; } }
+  }
+  .card-redgnat {
+    border-color: #C0392B;
+    h4 { color: #8b2219; }
+    .btn { background: #C0392B; &:hover { background: darken(#C0392B, 10%); color: #fff; } }
+  }
+  .card-sensegnat {
+    border-color: #7C3AED;
+    h4 { color: #5b25b5; }
+    .btn { background: #7C3AED; &:hover { background: darken(#7C3AED, 10%); color: #fff; } }
+  }
+}
+
+// ── Module cards (Analysis / Rules Builder / Investigations) ──────────────────
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.4rem;
+  margin: 2rem 0;
+
+  .module-card {
+    border: 2px solid $primary-pale;
+    border-top: 4px solid $primary;
+    border-radius: 10px;
+    padding: 1.4rem 1.5rem 1.5rem;
+    background: $cloud;
+    box-shadow: 0 2px 10px rgba(30, 51, 85, .07);
+    transition: transform .2s ease, box-shadow .2s ease;
+
+    &:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 22px rgba(30, 51, 85, .13);
+    }
+
+    .module-icon {
+      font-size: 1.75rem;
+      margin-bottom: .4rem;
+      display: block;
+    }
+
+    h3 {
+      margin: .2rem 0 .55rem;
+      color: $primary-dark;
+      font-size: 1.05rem;
+      border-bottom: none;
+    }
+
+    p {
+      margin: 0 0 .6rem;
+      font-size: .88rem;
+      color: #4a5568;
+      line-height: 1.5;
+    }
+
+    ul {
+      margin: .6rem 0 0;
+      padding-left: 1.1rem;
+      font-size: .85rem;
+      color: #555;
+      li { margin: .2rem 0; }
+    }
+  }
+}
+
+// ── Request / pipeline flow diagram ──────────────────────────────────────────
+.workflow-diagram {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin: 2rem 0;
+
+  .stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: $cloud;
+    border: 2px solid $primary;
+    border-radius: 8px;
+    padding: .65rem .9rem;
+    min-width: 90px;
+    text-align: center;
+    font-size: .8rem;
+    font-weight: 600;
+    color: $primary-dark;
+    line-height: 1.3;
+
+    .stage-label {
+      font-size: .68rem;
+      font-weight: 700;
+      color: $primary-light;
+      margin-bottom: .15rem;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+  }
+
+  .arrow {
+    display: flex;
+    align-items: center;
+    color: $primary-light;
+    font-size: 1.3rem;
+    padding: 0 .1rem;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .workflow-diagram {
+    flex-direction: column;
+    align-items: flex-start;
+    .arrow { transform: rotate(90deg); margin-left: 1.5rem; }
+  }
+}
+
+// ── Stack / technology badges ─────────────────────────────────────────────────
+.stack-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .45rem;
+  margin: 1.1rem 0;
+
+  .badge {
+    display: inline-block;
+    padding: .22em .7em;
+    border-radius: 20px;
+    font-size: .76rem;
+    font-weight: 600;
+    letter-spacing: .02em;
+
+    &.badge-frontend {
+      background: mix($primary, #fff, 11%);
+      color: darken($primary, 18%);
+      border: 1px solid mix($primary-pale, #fff, 80%);
+    }
+    &.badge-backend {
+      background: mix($primary-dark, #fff, 10%);
+      color: $primary-dark;
+      border: 1px solid mix($primary-pale, #fff, 80%);
+    }
+    &.badge-security {
+      background: mix(#C41E2A, #fff, 8%);
+      color: #8b1a1a;
+      border: 1px solid mix(#C41E2A, #fff, 25%);
+    }
+  }
+}
+
+// ── RBAC role cards ───────────────────────────────────────────────────────────
+.role-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+
+  .role-card {
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    font-size: .88rem;
+
+    strong {
+      display: block;
+      margin-bottom: .3rem;
+      font-size: .93rem;
+      font-family: monospace;
+    }
+    p { margin: 0; color: #555; line-height: 1.4; }
+
+    &.role-viewer  { background: #f2f2f2;                        border-left: 4px solid #888;         strong { color: #444; } }
+    &.role-analyst { background: mix($primary,      #fff, 8%);   border-left: 4px solid $primary;     strong { color: darken($primary, 10%); } }
+    &.role-senior  { background: mix($primary-dark, #fff, 7%);   border-left: 4px solid $primary-dark; strong { color: $primary-dark; } }
+    &.role-admin   { background: mix(#C41E2A,        #fff, 6%);  border-left: 4px solid #C41E2A;       strong { color: #8b1a1a; } }
+  }
+}
+
+// ── Docs nav quad table ───────────────────────────────────────────────────────
+.docs-quad {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+  margin: 2rem 0;
+
+  @media (max-width: 560px) { grid-template-columns: 1fr; }
+
+  .quad-card {
+    border: 1px solid $primary-pale;
+    border-top: 3px solid $primary;
+    border-radius: 8px;
+    padding: 1.1rem 1.25rem;
+    background: $cloud;
+
+    h4 {
+      margin: 0 0 .4rem;
+      color: $primary-dark;
+      font-size: .95rem;
+    }
+
+    p {
+      margin: 0 0 .6rem;
+      font-size: .82rem;
+      color: #666;
+      font-style: italic;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 1rem;
+      font-size: .85rem;
+      li { margin: .2rem 0; }
+    }
+  }
+}
