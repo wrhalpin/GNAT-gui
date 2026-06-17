@@ -40,7 +40,7 @@ jobs:
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/gnat-gui-frontend:${{ github.ref_name }}
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: backend/dist/*
           generate_release_notes: true
