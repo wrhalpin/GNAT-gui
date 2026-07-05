@@ -1,5 +1,7 @@
 def test_login_and_me(client, seeded_db):
-    resp = client.post("/api/auth/login", json={"username": "admin", "password": "adminpassword123"})
+    resp = client.post(
+        "/api/auth/login", json={"username": "admin", "password": "adminpassword123"}
+    )
     assert resp.status_code == 200
     data = resp.json()
     assert data["username"] == "admin"

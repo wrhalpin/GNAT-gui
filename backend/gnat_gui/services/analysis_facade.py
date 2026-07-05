@@ -20,9 +20,7 @@ class AnalysisFacade(FacadeBase):
         """Resolve an investigation's owner: GUI ownership record first, then the
         owner_id GNAT core stored at creation time."""
         row = (
-            self._db.query(InvestigationOwner)
-            .filter_by(investigation_id=investigation_id)
-            .first()
+            self._db.query(InvestigationOwner).filter_by(investigation_id=investigation_id).first()
         )
         if row:
             return row.owner_id
@@ -47,9 +45,7 @@ class AnalysisFacade(FacadeBase):
     def create_investigation(self, data: dict) -> Any:
         self._check(Permission.INVESTIGATION_CREATE)
         result = self._svc.create_investigation(data, owner_id=self._user.id)
-        self._db.add(
-            InvestigationOwner(investigation_id=result.id, owner_id=self._user.id)
-        )
+        self._db.add(InvestigationOwner(investigation_id=result.id, owner_id=self._user.id))
         self._audit.record(
             AuditAction.INVESTIGATION_CREATED,
             user_id=self._user.id,
@@ -83,9 +79,7 @@ class AnalysisFacade(FacadeBase):
             Permission.INVESTIGATION_DELETE_ANY,
         )
         self._svc.delete_investigation(investigation_id)
-        self._db.query(InvestigationOwner).filter_by(
-            investigation_id=investigation_id
-        ).delete()
+        self._db.query(InvestigationOwner).filter_by(investigation_id=investigation_id).delete()
         self._audit.record(
             AuditAction.INVESTIGATION_DELETED,
             user_id=self._user.id,
@@ -110,9 +104,7 @@ class AnalysisFacade(FacadeBase):
         )
         return result
 
-    def update_hypothesis(
-        self, investigation_id: str, hypothesis_id: str, data: dict
-    ) -> Any:
+    def update_hypothesis(self, investigation_id: str, hypothesis_id: str, data: dict) -> Any:
         self._check_owned(
             self._owner_of(investigation_id),
             Permission.INVESTIGATION_UPDATE_OWN,

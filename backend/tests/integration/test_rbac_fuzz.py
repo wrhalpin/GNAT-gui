@@ -3,6 +3,7 @@
 With CSRF handled by the test client and the rate limiter disabled (see conftest),
 a 403 here is a genuine RBAC denial rather than a CSRF/429 artifact.
 """
+
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -45,8 +46,10 @@ def test_admin_can_access_admin_route(client, seeded_db, method, path):
 @pytest.mark.parametrize("method,path,body", ANALYST_WRITE_ROUTES)
 def test_viewer_cannot_write(client, seeded_db, method, path, body):
     _login(client, "viewer", "viewerpassword123")
-    with patch("gnat_gui.services.analysis_facade.AnalysisFacade._load_service") as ma, \
-         patch("gnat_gui.services.rules_facade.RulesFacade._load_service") as mr:
+    with (
+        patch("gnat_gui.services.analysis_facade.AnalysisFacade._load_service") as ma,
+        patch("gnat_gui.services.rules_facade.RulesFacade._load_service") as mr,
+    ):
         ma.return_value = MagicMock()
         mr.return_value = MagicMock()
         r = getattr(client, method.lower())(path, json=body)
@@ -56,8 +59,10 @@ def test_viewer_cannot_write(client, seeded_db, method, path, body):
 @pytest.mark.parametrize("method,path,body", ANALYST_WRITE_ROUTES)
 def test_analyst_allowed_to_write(client, seeded_db, method, path, body):
     _login(client, "analyst", "analystpassword123")
-    with patch("gnat_gui.services.analysis_facade.AnalysisFacade._load_service") as ma, \
-         patch("gnat_gui.services.rules_facade.RulesFacade._load_service") as mr:
+    with (
+        patch("gnat_gui.services.analysis_facade.AnalysisFacade._load_service") as ma,
+        patch("gnat_gui.services.rules_facade.RulesFacade._load_service") as mr,
+    ):
         created = MagicMock()
         created.id = "obj1"
         ma.return_value = MagicMock()
@@ -65,4 +70,6 @@ def test_analyst_allowed_to_write(client, seeded_db, method, path, body):
         mr.return_value = MagicMock()
         mr.return_value.create_rule.return_value = created
         r = getattr(client, method.lower())(path, json=body)
-    assert r.status_code != 403, f"Analyst should be allowed {method} {path}, got {r.status_code}: {r.text}"
+    assert r.status_code != 403, (
+        f"Analyst should be allowed {method} {path}, got {r.status_code}: {r.text}"
+    )

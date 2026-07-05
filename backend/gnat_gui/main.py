@@ -6,11 +6,10 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from starlette_csrf import CSRFMiddleware
 
+import gnat_gui.jobs as _job_handlers  # noqa: F401  registers @job handlers
 from gnat_gui.config import settings
 from gnat_gui.rate_limit import limiter
 from gnat_gui.routers import admin, analysis, auth, investigations, jobs, prefs, rules
-
-import gnat_gui.jobs as _job_handlers  # noqa: F401  registers @job handlers
 
 # starlette-csrf matches request paths against compiled regex Patterns (not strings).
 # Login is exempt (no session cookie yet, pre-auth) and job SSE streams are GET-only.
@@ -30,7 +29,8 @@ def create_app() -> FastAPI:
     )
 
     app.state.limiter = limiter
-    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    # slowapi's handler signature is narrower than Starlette's generic type.
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
 
     # CSRF protection for all state-changing routes. Uses the double-submit-cookie
     # pattern: the middleware sets a JS-readable `csrftoken` cookie, and the SPA echoes

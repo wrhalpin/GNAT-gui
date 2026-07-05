@@ -26,9 +26,7 @@ def test_senior_can_materialize(client, seeded_db):
     from unittest.mock import patch
 
     _login(client, "senior", "seniorpassword123")
-    with patch(
-        "gnat.analyst_services.investigations.InvestigationsService"
-    ) as MockSvc:
+    with patch("gnat.analyst_services.investigations.InvestigationsService") as MockSvc:
         MockSvc.return_value.materialize.return_value = {"status": "materialized"}
         resp = client.post("/api/investigations/inv1/materialize")
     assert resp.status_code == 200

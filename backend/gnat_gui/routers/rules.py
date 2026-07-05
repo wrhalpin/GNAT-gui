@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from gnat_gui.deps import Audit, CurrentUser, DB
+from gnat_gui.deps import DB, Audit, CurrentUser
 from gnat_gui.services.rules_facade import RulesFacade
 
 router = APIRouter(prefix="/api/rules", tags=["rules"])
@@ -11,7 +11,13 @@ def _facade(db: DB, current_user: CurrentUser, audit: Audit) -> RulesFacade:
 
 
 @router.get("")
-def list_rules(db: DB, current_user: CurrentUser, audit: Audit, engine: str | None = None, scope: str | None = None):
+def list_rules(
+    db: DB,
+    current_user: CurrentUser,
+    audit: Audit,
+    engine: str | None = None,
+    scope: str | None = None,
+):
     return _facade(db, current_user, audit).list_rules(engine=engine, scope=scope)
 
 

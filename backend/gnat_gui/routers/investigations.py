@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from gnat_gui.deps import Audit, CurrentUser, DB
+from gnat_gui.deps import DB, Audit, CurrentUser
 from gnat_gui.services.investigations_facade import InvestigationsFacade
 
 router = APIRouter(prefix="/api/investigations", tags=["investigations"])

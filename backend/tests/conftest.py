@@ -10,6 +10,7 @@ Three things make the suite honest rather than vacuously green:
    requests) and the login rate limiter is disabled, so tests exercise real RBAC
    instead of tripping over CSRF/429 first.
 """
+
 import sys
 import types
 from unittest.mock import MagicMock

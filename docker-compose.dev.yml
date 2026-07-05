@@ -23,15 +23,38 @@ services:
       - GNAT_GUI_DB_URL=postgresql+psycopg2://gnat_gui:gnat_gui@postgres/gnat_gui
       - GNAT_GUI_SECRET_KEY=dev-secret-not-for-production
       - GNAT_GUI_DEBUG=true
+      - GNAT_GUI_COOKIE_SECURE=false
       - GNAT_GUI_CORS_ORIGINS=["http://localhost:5173"]
+      - ADMIN_PASSWORD=changeme-please-set-env
+      - SEED_DEMO_USERS=1
     ports:
       - "8000:8000"
     volumes:
       - ./backend:/app
+      - ./scripts:/scripts
     depends_on:
       postgres:
         condition: service_healthy
-    command: uvicorn gnat_gui.main:app --host 0.0.0.0 --port 8000 --reload
+    # Migrate and seed on start, then run with hot reload. gnat_gui is installed in
+    # the image, so seed.py imports it fine even though scripts/ lives outside /app.
+    command: >
+      sh -c "alembic upgrade head &&
+             python /scripts/seed.py &&
+             uvicorn gnat_gui.main:app --host 0.0.0.0 --port 8000 --reload"
+
+  frontend:
+    image: node:20-slim
+    working_dir: /app
+    environment:
+      # Proxy /api to the backend service (not localhost) from inside the container.
+      - VITE_API_TARGET=http://backend:8000
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+    depends_on:
+      - backend
+    command: sh -c "npm install && npx vite --host 0.0.0.0 --port 5173"
 
 volumes:
   gnat-gui-dev-pgdata:

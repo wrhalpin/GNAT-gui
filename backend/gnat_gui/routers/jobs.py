@@ -19,7 +19,7 @@ def _get_job_authorized(job_id: str, current_user: Any) -> Any:
     except ModuleNotFoundError:
         # Without the gnat core library no jobs can exist — report not-found
         # rather than a 500.
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found") from None
 
     job = JobStore().get(job_id)
     if not job:

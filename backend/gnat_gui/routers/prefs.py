@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 
 from gnat_gui.db.models.ui_state import UIState
-from gnat_gui.deps import CurrentUser, DB
+from gnat_gui.deps import DB, CurrentUser
 from gnat_gui.schemas.ui import UIStateGet, UIStatePut
 
 router = APIRouter(prefix="/api/prefs", tags=["prefs"])

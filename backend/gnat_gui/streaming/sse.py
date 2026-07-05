@@ -51,9 +51,7 @@ async def job_event_generator(job_id: str) -> AsyncGenerator[str, None]:
             return
 
         if elapsed >= MAX_STREAM_SECONDS:
-            yield _encode(
-                {"type": "error", "error": f"Stream timed out after {int(elapsed)}s"}
-            )
+            yield _encode({"type": "error", "error": f"Stream timed out after {int(elapsed)}s"})
             return
 
         if since_heartbeat >= HEARTBEAT_SECONDS:

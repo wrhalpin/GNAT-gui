@@ -5,7 +5,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="GNAT_GUI_", env_file=".env", extra="ignore")
 
     db_url: str = "sqlite:///./dev.db"
-    secret_key: str = "change-me-in-production"
+    secret_key: str = "change-me-in-production"  # noqa: S105  placeholder; override in prod
     session_expire_seconds: int = 86400
     login_rate_limit: str = "10/minute"
     # Session and CSRF cookies are marked Secure only when enabled. Keep this False for

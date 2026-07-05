@@ -1,9 +1,13 @@
 import uuid
+from typing import TYPE_CHECKING
 
 from sqlalchemy import JSON, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from gnat_gui.db.base import Base
+
+if TYPE_CHECKING:
+    from gnat_gui.db.models.user import User
 
 
 class Role(Base):

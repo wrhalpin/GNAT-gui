@@ -7,10 +7,14 @@ services:
     environment:
       - GNAT_GUI_DB_URL=postgresql+psycopg2://gnat_gui:${POSTGRES_PASSWORD}@postgres/gnat_gui
       - GNAT_GUI_SECRET_KEY=${SESSION_SECRET}
-      - GNAT_GUI_GNAT_CONFIG_PATH=${GNAT_CONFIG:-/etc/gnat/config.yml}
+      - GNAT_GUI_COOKIE_SECURE=${COOKIE_SECURE:-true}
+      # GNAT_CONFIG_DIR (host) is mounted at /etc/gnat; the config file within it is
+      # referenced by GNAT_GUI_GNAT_CONFIG_PATH. Previously these used two different
+      # variable names and silently desynchronized.
+      - GNAT_GUI_GNAT_CONFIG_PATH=/etc/gnat/config.yml
       - GNAT_GUI_LLM_API_KEY=${LLM_API_KEY:-}
     volumes:
-      - ${GNAT_CONFIG_PATH:-/etc/gnat}:/etc/gnat:ro
+      - ${GNAT_CONFIG_DIR:-/etc/gnat}:/etc/gnat:ro
     restart: unless-stopped
 
   gnat-gui-frontend:

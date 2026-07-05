@@ -1,12 +1,12 @@
 import secrets
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from gnat_gui.auth.password import dummy_verify, verify_password
 from gnat_gui.audit.events import AuditAction
 from gnat_gui.audit.service import AuditService
+from gnat_gui.auth.password import dummy_verify, verify_password
 from gnat_gui.config import settings
 from gnat_gui.db.models.session import UserSession
 from gnat_gui.db.models.user import User
@@ -30,9 +30,7 @@ class AuthService:
         else:
             credentials_ok = verify_password(password, user.hashed_password)
         if not user or not credentials_ok:
-            self._audit.record(
-                AuditAction.LOGIN_FAILED, username=username, source_ip=source_ip
-            )
+            self._audit.record(AuditAction.LOGIN_FAILED, username=username, source_ip=source_ip)
             self._db.commit()  # failed-login audit must survive the 401
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -42,8 +40,7 @@ class AuthService:
         session = UserSession(
             user_id=user.id,
             token=secrets.token_urlsafe(32),
-            expires_at=datetime.now(timezone.utc)
-            + timedelta(seconds=settings.session_expire_seconds),
+            expires_at=datetime.now(UTC) + timedelta(seconds=settings.session_expire_seconds),
             source_ip=source_ip,
         )
         self._db.add(session)
@@ -64,7 +61,7 @@ class AuthService:
             self._db.flush()
 
     def get_session_user(self, token: str) -> tuple[User, list[str]]:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         session = (
             self._db.query(UserSession)
             .filter(

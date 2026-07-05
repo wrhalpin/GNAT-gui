@@ -16,7 +16,9 @@ def test_analyst_can_create_rule(client, seeded_db):
         svc = MagicMock()
         svc.create_rule.return_value = mock_rule
         m.return_value = svc
-        resp = client.post("/api/rules", json={"name": "test-rule", "engine": "yaml", "content": ""})
+        resp = client.post(
+            "/api/rules", json={"name": "test-rule", "engine": "yaml", "content": ""}
+        )
 
     assert resp.status_code == 200
 

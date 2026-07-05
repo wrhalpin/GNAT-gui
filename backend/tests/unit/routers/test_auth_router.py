@@ -1,3 +1,4 @@
+from datetime import UTC
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -19,8 +20,9 @@ def test_login_calls_auth_service(client):
 
     mock_session = MagicMock()
     mock_session.token = "tok"
-    from datetime import datetime, timezone, timedelta
-    mock_session.expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
+    from datetime import datetime, timedelta
+
+    mock_session.expires_at = datetime.now(UTC) + timedelta(hours=1)
 
     with patch("gnat_gui.routers.auth.AuthService") as MockAuth:
         MockAuth.return_value.login.return_value = (mock_user, mock_session)
@@ -44,8 +46,9 @@ def test_logout_clears_cookie(client):
 
     mock_session = MagicMock()
     mock_session.token = "tok"
-    from datetime import datetime, timezone, timedelta
-    mock_session.expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
+    from datetime import datetime, timedelta
+
+    mock_session.expires_at = datetime.now(UTC) + timedelta(hours=1)
 
     with patch("gnat_gui.routers.auth.AuthService") as MockAuth:
         MockAuth.return_value.login.return_value = (mock_user, mock_session)

@@ -16,14 +16,14 @@ class InvestigationsFacade(FacadeBase):
 
     def _owner_of(self, investigation_id: str) -> str | None:
         row = (
-            self._db.query(InvestigationOwner)
-            .filter_by(investigation_id=investigation_id)
-            .first()
+            self._db.query(InvestigationOwner).filter_by(investigation_id=investigation_id).first()
         )
         if row:
             return row.owner_id
         try:
-            from gnat.analyst_services.investigations import InvestigationsService  # type: ignore[import]
+            from gnat.analyst_services.investigations import (
+                InvestigationsService,  # type: ignore[import]
+            )
 
             obj = InvestigationsService().get_investigation(investigation_id)
         except Exception:
@@ -46,7 +46,9 @@ class InvestigationsFacade(FacadeBase):
 
     def get_graph(self, investigation_id: str) -> Any:
         self._check(Permission.INVESTIGATION_READ_OWN)
-        from gnat.analyst_services.investigations import InvestigationsService  # type: ignore[import]
+        from gnat.analyst_services.investigations import (
+            InvestigationsService,  # type: ignore[import]
+        )
 
         return InvestigationsService().get_graph(investigation_id)
 
@@ -66,7 +68,9 @@ class InvestigationsFacade(FacadeBase):
 
     def materialize(self, investigation_id: str) -> Any:
         self._check(Permission.INVESTIGATION_MATERIALIZE)
-        from gnat.analyst_services.investigations import InvestigationsService  # type: ignore[import]
+        from gnat.analyst_services.investigations import (
+            InvestigationsService,  # type: ignore[import]
+        )
 
         result = InvestigationsService().materialize(investigation_id)
         self._audit.record(

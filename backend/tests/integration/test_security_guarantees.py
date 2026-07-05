@@ -1,4 +1,5 @@
 """Regression tests for the milestone-2 security fixes."""
+
 from unittest.mock import MagicMock, patch
 
 
@@ -35,7 +36,9 @@ def test_analyst_cannot_update_another_analysts_investigation(client, seeded_db)
         svc = MagicMock()
         svc.create_investigation.return_value = owned
         m.return_value = svc
-        assert client.post("/api/analysis/investigations", json={"title": "mine"}).status_code == 200
+        assert (
+            client.post("/api/analysis/investigations", json={"title": "mine"}).status_code == 200
+        )
 
     # a different analyst tries to PATCH it — they hold only update.own, and they
     # are not the owner, so the .own/.any check must deny with 403.

@@ -6,6 +6,7 @@ this module must not crash app startup. We fall back to a no-op ``job`` decorato
 the handler functions are still defined; real registration only happens when the
 ``gnat.jobs`` registry is importable.
 """
+
 from collections.abc import Callable
 from typing import Any
 
@@ -26,6 +27,7 @@ except ModuleNotFoundError:  # pragma: no cover - exercised only without the gna
 @job("build_investigation")
 def build_investigation_job(payload: dict, progress_cb, cancel) -> dict:
     from gnat.investigations.builder import InvestigationBuilder  # type: ignore[import]
+
     builder = InvestigationBuilder(seeds=payload["seeds"])
     result = builder.build_with_progress(lambda p, msg: progress_cb(p, msg))
     return result.to_dict()
@@ -34,9 +36,11 @@ def build_investigation_job(payload: dict, progress_cb, cancel) -> dict:
 @job("expand_node")
 def expand_node_job(payload: dict, progress_cb, cancel) -> dict:
     from gnat.analyst_services.investigations import InvestigationsService  # type: ignore[import]
+
     svc = InvestigationsService()
     result = svc.expand_node(
-        payload["investigation_id"], payload["node_id"],
+        payload["investigation_id"],
+        payload["node_id"],
         progress_callback=lambda p, msg: progress_cb(p, msg),
     )
     return result.to_dict()
@@ -45,6 +49,7 @@ def expand_node_job(payload: dict, progress_cb, cancel) -> dict:
 @job("gap_detection")
 def gap_detection_job(payload: dict, progress_cb, cancel) -> dict:
     from gnat.analysis.copilot import GapDetector  # type: ignore[import]
+
     detector = GapDetector()
     gaps = detector.detect_with_progress(
         hypothesis=payload["hypothesis"],
@@ -56,15 +61,13 @@ def gap_detection_job(payload: dict, progress_cb, cancel) -> dict:
 
 @job("report_draft")
 def report_draft_job(payload: dict, progress_cb, cancel) -> dict:
-    from gnat.analysis.copilot.drafting import ReportDraftingAssistant  # type: ignore[import]
     from anthropic import Anthropic  # type: ignore[import]
+    from gnat.analysis.copilot.drafting import ReportDraftingAssistant  # type: ignore[import]
 
     from gnat_gui.config import settings
 
     if not settings.llm_api_key:
-        raise RuntimeError(
-            "LLM not configured: set GNAT_GUI_LLM_API_KEY to enable report drafting"
-        )
+        raise RuntimeError("LLM not configured: set GNAT_GUI_LLM_API_KEY to enable report drafting")
     client = Anthropic(api_key=settings.llm_api_key)
     try:
         assistant = ReportDraftingAssistant(llm_client=client, model=settings.llm_model)
@@ -80,6 +83,7 @@ def report_draft_job(payload: dict, progress_cb, cancel) -> dict:
 @job("test_rule")
 def test_rule_job(payload: dict, progress_cb, cancel) -> dict:
     from gnat.analyst_services.rules import RulesService  # type: ignore[import]
+
     svc = RulesService()
     result = svc.test_rule(
         payload["rule_id"],

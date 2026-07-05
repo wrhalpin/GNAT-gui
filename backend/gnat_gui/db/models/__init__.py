@@ -4,6 +4,7 @@ Importing this package (``from gnat_gui.db import models``) is enough to registe
 mappers — needed by ``Base.metadata.create_all``, Alembic autogenerate, and any code
 (e.g. seed.py) that triggers mapper configuration via a query.
 """
+
 from gnat_gui.db.models.audit import AuditEvent
 from gnat_gui.db.models.investigation_owner import InvestigationOwner
 from gnat_gui.db.models.role import Role

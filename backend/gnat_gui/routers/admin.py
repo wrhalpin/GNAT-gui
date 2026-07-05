@@ -9,7 +9,7 @@ from gnat_gui.db.models.audit import AuditEvent
 from gnat_gui.db.models.role import Role
 from gnat_gui.db.models.session import UserSession
 from gnat_gui.db.models.user import User
-from gnat_gui.deps import Audit, DB
+from gnat_gui.deps import DB, Audit
 from gnat_gui.rbac.decorators import require_permission
 from gnat_gui.rbac.permissions import Permission
 from gnat_gui.schemas.admin import (
@@ -32,7 +32,9 @@ def create_user(
 ) -> UserResponse:
     role = db.query(Role).filter_by(name=body.role).first()
     if not role:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Unknown role: {body.role}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=f"Unknown role: {body.role}"
+        )
 
     user = User(
         username=body.username,
@@ -47,7 +49,7 @@ def create_user(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Username already exists: {body.username}",
-        )
+        ) from None
     audit.record(
         AuditAction.USER_CREATED,
         user_id=current_user.id,
@@ -98,15 +100,15 @@ def update_user(
     if body.role is not None:
         role = db.query(Role).filter_by(name=body.role).first()
         if not role:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Unknown role: {body.role}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail=f"Unknown role: {body.role}"
+            )
         user.role_id = role.id
     if body.is_active is not None:
         user.is_active = body.is_active
     if deactivating:
         # Cut off access immediately: revoke every live session for this user.
-        db.query(UserSession).filter_by(user_id=user.id, revoked=False).update(
-            {"revoked": True}
-        )
+        db.query(UserSession).filter_by(user_id=user.id, revoked=False).update({"revoked": True})
     audit.record(
         AuditAction.USER_DEACTIVATED if deactivating else AuditAction.USER_UPDATED,
         user_id=current_user.id,

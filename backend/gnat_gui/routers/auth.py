@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, Request, Response
 from gnat_gui.auth.middleware import get_session_token
 from gnat_gui.auth.service import AuthService
 from gnat_gui.config import settings
-from gnat_gui.deps import Audit, CurrentUser, DB, SourceIP
+from gnat_gui.deps import DB, Audit, CurrentUser, SourceIP
 from gnat_gui.rate_limit import limiter
 from gnat_gui.schemas.auth import LoginRequest, MeResponse, SessionResponse
 

@@ -1,4 +1,5 @@
 """Assert that state-changing routes produce the expected audit events."""
+
 from unittest.mock import patch
 
 from gnat_gui.audit.events import AuditAction

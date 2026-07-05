@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from gnat_gui.deps import Audit, CurrentUser, DB
+from gnat_gui.deps import DB, Audit, CurrentUser
 from gnat_gui.services.analysis_facade import AnalysisFacade
 
 router = APIRouter(prefix="/api/analysis", tags=["analysis"])
@@ -12,10 +12,16 @@ def _facade(db: DB, current_user: CurrentUser, audit: Audit) -> AnalysisFacade:
 
 @router.get("/investigations")
 def list_investigations(
-    db: DB, current_user: CurrentUser, audit: Audit,
-    status: str | None = None, page: int = 1, page_size: int = 50,
+    db: DB,
+    current_user: CurrentUser,
+    audit: Audit,
+    status: str | None = None,
+    page: int = 1,
+    page_size: int = 50,
 ):
-    return _facade(db, current_user, audit).list_investigations(status=status, page=page, page_size=page_size)
+    return _facade(db, current_user, audit).list_investigations(
+        status=status, page=page, page_size=page_size
+    )
 
 
 @router.post("/investigations")
@@ -29,7 +35,9 @@ def get_investigation(investigation_id: str, db: DB, current_user: CurrentUser, 
 
 
 @router.patch("/investigations/{investigation_id}")
-def update_investigation(investigation_id: str, body: dict, db: DB, current_user: CurrentUser, audit: Audit):
+def update_investigation(
+    investigation_id: str, body: dict, db: DB, current_user: CurrentUser, audit: Audit
+):
     return _facade(db, current_user, audit).update_investigation(investigation_id, body)
 
 
@@ -39,12 +47,21 @@ def delete_investigation(investigation_id: str, db: DB, current_user: CurrentUse
 
 
 @router.post("/investigations/{investigation_id}/hypotheses")
-def create_hypothesis(investigation_id: str, body: dict, db: DB, current_user: CurrentUser, audit: Audit):
+def create_hypothesis(
+    investigation_id: str, body: dict, db: DB, current_user: CurrentUser, audit: Audit
+):
     return _facade(db, current_user, audit).create_hypothesis(investigation_id, body)
 
 
 @router.patch("/investigations/{investigation_id}/hypotheses/{hypothesis_id}")
-def update_hypothesis(investigation_id: str, hypothesis_id: str, body: dict, db: DB, current_user: CurrentUser, audit: Audit):
+def update_hypothesis(
+    investigation_id: str,
+    hypothesis_id: str,
+    body: dict,
+    db: DB,
+    current_user: CurrentUser,
+    audit: Audit,
+):
     return _facade(db, current_user, audit).update_hypothesis(investigation_id, hypothesis_id, body)
 
 
@@ -59,7 +76,9 @@ def get_timeline(investigation_id: str, db: DB, current_user: CurrentUser, audit
 
 
 @router.post("/investigations/{investigation_id}/gap-detection")
-def submit_gap_detection(investigation_id: str, body: dict, db: DB, current_user: CurrentUser, audit: Audit):
+def submit_gap_detection(
+    investigation_id: str, body: dict, db: DB, current_user: CurrentUser, audit: Audit
+):
     job_id = _facade(db, current_user, audit).submit_gap_detection(
         investigation_id, body.get("hypothesis")
     )
@@ -67,7 +86,9 @@ def submit_gap_detection(investigation_id: str, body: dict, db: DB, current_user
 
 
 @router.post("/investigations/{investigation_id}/draft-report")
-def submit_draft_report(investigation_id: str, body: dict, db: DB, current_user: CurrentUser, audit: Audit):
+def submit_draft_report(
+    investigation_id: str, body: dict, db: DB, current_user: CurrentUser, audit: Audit
+):
     job_id = _facade(db, current_user, audit).submit_draft_report(
         investigation_id, body.get("report")
     )

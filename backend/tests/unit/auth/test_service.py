@@ -1,6 +1,7 @@
+from unittest.mock import MagicMock
+
 import pytest
 from fastapi import HTTPException
-from unittest.mock import MagicMock
 
 from gnat_gui.auth.password import hash_password
 from gnat_gui.auth.service import AuthService
@@ -16,10 +17,13 @@ def mock_audit():
 @pytest.fixture
 def user_with_role(db):
     from gnat_gui.rbac.permissions import ROLE_PERMISSIONS
+
     role = Role(name="analyst", permissions=ROLE_PERMISSIONS["analyst"])
     db.add(role)
     db.flush()
-    user = User(username="testuser", hashed_password=hash_password("validpassword123"), role_id=role.id)
+    user = User(
+        username="testuser", hashed_password=hash_password("validpassword123"), role_id=role.id
+    )
     db.add(user)
     db.commit()
     return user

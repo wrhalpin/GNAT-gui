@@ -3,6 +3,10 @@ import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import path from "path";
 
+// The API proxy target defaults to localhost for bare-metal dev, but is overridable
+// (e.g. VITE_API_TARGET=http://backend:8000 when running inside docker-compose.dev).
+const apiTarget = process.env.VITE_API_TARGET ?? "http://localhost:8000";
+
 export default defineConfig({
   plugins: [react()],
   resolve: {
@@ -11,13 +15,14 @@ export default defineConfig({
     },
   },
   server: {
+    host: true,
     proxy: {
       "/api": {
-        target: "http://localhost:8000",
+        target: apiTarget,
         changeOrigin: true,
       },
       "/openapi.json": {
-        target: "http://localhost:8000",
+        target: apiTarget,
         changeOrigin: true,
       },
     },

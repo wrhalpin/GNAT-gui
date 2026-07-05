@@ -8,21 +8,55 @@ on:
 jobs:
   e2e:
     runs-on: ubuntu-latest
+    env:
+      GNAT_GUI_DB_URL: sqlite:///./e2e.db
+      GNAT_GUI_SECRET_KEY: e2e-secret
+      GNAT_GUI_COOKIE_SECURE: "false"
+      ADMIN_PASSWORD: changeme-please-set-env
+      SEED_DEMO_USERS: "1"
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install backend
+        working-directory: backend
+        run: pip install -e ".[dev]"
+      - name: Migrate and seed
+        working-directory: backend
+        run: |
+          alembic upgrade head
+          python ../scripts/seed.py
+      - name: Start backend
+        working-directory: backend
+        run: |
+          nohup uvicorn gnat_gui.main:app --host 0.0.0.0 --port 8000 > backend.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8000/openapi.json > /dev/null && break
+            sleep 1
+          done
+          curl -sf http://localhost:8000/openapi.json > /dev/null || { echo "backend failed to start"; cat backend.log; exit 1; }
+
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - name: Start stack
-        run: docker compose -f docker-compose.dev.yml up -d --wait
-      - name: Install Playwright
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install frontend + Playwright
         working-directory: frontend
-        run: npm ci && npx playwright install --with-deps chromium
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
       - name: Run E2E
         working-directory: frontend
         run: npm run e2e
+
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: playwright-traces
-          path: frontend/test-results/
+          name: playwright-report
+          path: |
+            frontend/test-results/
+            frontend/playwright-report/
