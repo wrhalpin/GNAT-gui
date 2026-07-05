@@ -93,3 +93,8 @@ def submit_draft_report(
         investigation_id, body.get("report")
     )
     return {"job_id": job_id}
+
+
+@router.post("/reports/{report_id}/publish")
+def publish_report(report_id: str, db: DB, current_user: CurrentUser, audit: Audit):
+    return _facade(db, current_user, audit).publish_report(report_id)

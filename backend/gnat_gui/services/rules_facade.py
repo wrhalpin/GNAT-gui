@@ -24,9 +24,14 @@ class RulesFacade(FacadeBase):
             return None
         return getattr(rule, "owner_id", None)
 
-    def list_rules(self, engine: str | None = None, scope: str | None = None) -> Any:
+    def list_rules(
+        self,
+        engine: str | None = None,
+        scope: str | None = None,
+        status: str | None = None,
+    ) -> Any:
         self._check(Permission.RULE_READ)
-        return self._svc.list_rules(engine=engine, scope=scope)
+        return self._svc.list_rules(engine=engine, scope=scope, status=status)
 
     def get_rule(self, rule_id: str) -> Any:
         self._check(Permission.RULE_READ)

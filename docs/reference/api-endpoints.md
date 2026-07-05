@@ -69,7 +69,7 @@ All endpoints require `investigation.read.own` at minimum.
 
 List investigations visible to the current user.
 
-**Query params:** `page` (int, default 1), `page_size` (int, default 25), `status` (filter by status)
+**Query params:** `page` (int, default 1), `page_size` (int, default 50), `status` (filter by status)
 
 **Response 200** — paginated list of investigation summaries
 
@@ -153,16 +153,16 @@ Submit a gap detection job. Requires `investigation.read.own`.
 
 ---
 
-### `POST /api/analysis/investigations/{id}/report-draft`
+### `POST /api/analysis/investigations/{id}/draft-report`
 
 Submit a report drafting job. Requires `report.create`.
 
 **Request body**
 ```json
-{ "report_type": "tactical", "tlp": "amber" }
+{ "report": { "report_type": "tactical", "tlp": "amber" } }
 ```
 
-**Response 202** — `{ "job_id": "string" }`
+**Response 200** — `{ "job_id": "string" }`
 
 ---
 
@@ -208,7 +208,7 @@ Get a single rule with full body and audit trail.
 
 ---
 
-### `PATCH /api/rules/{id}`
+### `PUT /api/rules/{id}`
 
 Update a rule. Requires `rule.update.own` (or `.any`).
 
@@ -229,11 +229,11 @@ Submit a test job. Requires `rule.test`.
 { "fixture": { "type": "bundle", "objects": [...] } }
 ```
 
-**Response 202** — `{ "job_id": "string" }`
+**Response 200** — `{ "job_id": "string" }`
 
 ---
 
-### `GET /api/rules/{id}/audit`
+### `GET /api/rules/{id}/audit-trail`
 
 Return the audit trail for a rule. Requires `rule.read`.
 
@@ -247,7 +247,7 @@ Promote rule from `draft` to `active`. Requires `rule.publish`.
 
 ## Investigations — `/api/investigations`
 
-### `POST /api/investigations/build`
+### `POST /api/investigations`
 
 Submit an investigation build job. Requires `investigation.create`.
 
@@ -256,7 +256,10 @@ Submit an investigation build job. Requires `investigation.create`.
 { "seeds": [{ "type": "domain", "value": "evil.example.com" }] }
 ```
 
-**Response 202** — `{ "job_id": "string", "investigation_id": "string" }`
+**Response 200** — `{ "job_id": "string" }`
+
+> The investigation id does not exist until the async build job completes; poll the
+> job (`GET /api/jobs/{job_id}`) — its terminal `result` carries the `investigation_id`.
 
 ---
 
@@ -274,11 +277,16 @@ Return the full graph (nodes and edges). Requires `investigation.read.own`.
 
 ---
 
-### `POST /api/investigations/{id}/nodes/{node_id}/expand`
+### `POST /api/investigations/{id}/expand`
 
-Expand a single node. Requires `investigation.update.own`.
+Expand a single node. Requires `investigation.update.own` (or `.any`).
 
-**Response 202** — `{ "job_id": "string" }`
+**Request body**
+```json
+{ "node_id": "indicator--..." }
+```
+
+**Response 200** — `{ "job_id": "string" }`
 
 ---
 
@@ -286,7 +294,7 @@ Expand a single node. Requires `investigation.update.own`.
 
 Materialise the graph to the GNAT workspace. Requires `investigation.materialize`.
 
-**Response 202** — `{ "job_id": "string" }`
+**Response 200**
 
 ---
 

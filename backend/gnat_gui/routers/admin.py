@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query, status
@@ -85,6 +86,24 @@ def list_users(
     ]
 
 
+@router.get("/users/{user_id}", response_model=UserResponse)
+def get_user(
+    user_id: str,
+    db: DB,
+    current_user: Any = require_permission(Permission.ADMIN_USERS),
+) -> UserResponse:
+    user = db.query(User).filter_by(id=user_id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    return UserResponse(
+        user_id=user.id,
+        username=user.username,
+        role=user.role.name,
+        is_active=user.is_active,
+        created_at=user.created_at,
+    )
+
+
 @router.patch("/users/{user_id}", response_model=UserResponse)
 def update_user(
     user_id: str,
@@ -131,12 +150,25 @@ def list_audit(
     db: DB,
     page: int = Query(1, ge=1),
     page_size: int = Query(50, ge=1, le=200),
+    action: str | None = Query(None),
+    user_id: str | None = Query(None),
+    after: datetime | None = Query(None),
+    before: datetime | None = Query(None),
     current_user: Any = require_permission(Permission.AUDIT_READ),
 ) -> AuditListResponse:
-    total = db.query(AuditEvent).count()
+    query = db.query(AuditEvent)
+    if action:
+        query = query.filter(AuditEvent.action == action)
+    if user_id:
+        query = query.filter(AuditEvent.user_id == user_id)
+    if after:
+        query = query.filter(AuditEvent.timestamp >= after)
+    if before:
+        query = query.filter(AuditEvent.timestamp <= before)
+
+    total = query.count()
     events = (
-        db.query(AuditEvent)
-        .order_by(AuditEvent.timestamp.desc())
+        query.order_by(AuditEvent.timestamp.desc())
         .offset((page - 1) * page_size)
         .limit(page_size)
         .all()

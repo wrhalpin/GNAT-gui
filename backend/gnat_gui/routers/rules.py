@@ -17,8 +17,9 @@ def list_rules(
     audit: Audit,
     engine: str | None = None,
     scope: str | None = None,
+    status: str | None = None,
 ):
-    return _facade(db, current_user, audit).list_rules(engine=engine, scope=scope)
+    return _facade(db, current_user, audit).list_rules(engine=engine, scope=scope, status=status)
 
 
 @router.post("")

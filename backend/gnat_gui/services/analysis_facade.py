@@ -183,3 +183,15 @@ class AnalysisFacade(FacadeBase):
             target_type="investigation",
         )
         return job.id
+
+    def publish_report(self, report_id: str) -> Any:
+        self._check(Permission.REPORT_PUBLISH)
+        result = self._svc.publish_report(report_id)
+        self._audit.record(
+            AuditAction.REPORT_PUBLISHED,
+            user_id=self._user.id,
+            username=self._user.username,
+            target_id=report_id,
+            target_type="report",
+        )
+        return result
