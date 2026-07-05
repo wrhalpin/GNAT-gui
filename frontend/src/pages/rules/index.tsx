@@ -1,16 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { RuleList } from "@/components/rules/rule-list";
 import { useCreateRule } from "@/api/queries/rules";
 
-export const Route = createFileRoute("/rules/")({
-  component: RulesIndex,
-});
-
 const ENGINES = ["", "hy", "yaml", "prolog"];
 const SCOPES = ["", "personal", "team", "shared"];
 
-function RulesIndex() {
+export function RulesIndex() {
   const [engine, setEngine] = useState("");
   const [scope, setScope] = useState("");
   const [showNew, setShowNew] = useState(false);

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { useParams } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { useRule, useUpdateRule, usePromoteRule } from "@/api/queries/rules";
 import { RuleEditor } from "@/components/rules/rule-editor";
@@ -7,14 +7,10 @@ import { TestRunnerPanel } from "@/components/rules/test-runner-panel";
 import { AuditTrail } from "@/components/rules/audit-trail";
 import { usePermission } from "@/lib/rbac";
 
-export const Route = createFileRoute("/rules/$id")({
-  component: RuleDetailPage,
-});
-
 type Tab = "editor" | "test" | "audit";
 
-function RuleDetailPage() {
-  const { id } = Route.useParams();
+export function RuleDetailPage() {
+  const { id = "" } = useParams({ strict: false });
   const { data: rule, isLoading } = useRule(id);
   const update = useUpdateRule(id);
   const promote = usePromoteRule(id);

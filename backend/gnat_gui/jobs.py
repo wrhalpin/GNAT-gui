@@ -1,5 +1,26 @@
-"""Register all gnat.jobs handlers for this application."""
-from gnat.jobs import job  # type: ignore[import]
+"""Register all gnat.jobs handlers for this application.
+
+The ``gnat`` core library is an editable/optional install (see CLAUDE.md). When it
+is absent — for example in a CI unit-test image that does not vendor GNAT — importing
+this module must not crash app startup. We fall back to a no-op ``job`` decorator so
+the handler functions are still defined; real registration only happens when the
+``gnat.jobs`` registry is importable.
+"""
+from collections.abc import Callable
+from typing import Any
+
+try:
+    from gnat.jobs import job  # type: ignore[import]
+
+    GNAT_AVAILABLE = True
+except ModuleNotFoundError:  # pragma: no cover - exercised only without the gnat lib
+    GNAT_AVAILABLE = False
+
+    def job(name: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+        def decorator(fn: Callable[..., Any]) -> Callable[..., Any]:
+            return fn
+
+        return decorator
 
 
 @job("build_investigation")

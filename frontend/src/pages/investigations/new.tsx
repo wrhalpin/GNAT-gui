@@ -1,11 +1,7 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { SeedPicker } from "@/components/investigations/seed-picker";
 
-export const Route = createFileRoute("/investigations/new")({
-  component: NewInvestigationPage,
-});
-
-function NewInvestigationPage() {
+export function NewInvestigationPage() {
   const navigate = useNavigate();
   return (
     <SeedPicker

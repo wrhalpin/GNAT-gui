@@ -1,11 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useMe } from "@/lib/auth";
 
-export const Route = createFileRoute("/")({
-  component: Dashboard,
-});
-
-function Dashboard() {
+export function Dashboard() {
   const { data: me } = useMe();
 
   return (

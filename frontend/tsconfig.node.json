@@ -1,12 +1,14 @@
 {
   "compilerOptions": {
+    "composite": true,
     "target": "ES2022",
-    "lib": ["ES2022"],
+    "lib": ["ES2022", "DOM"],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
     "strict": true,
-    "noEmit": true
+    "types": ["node", "vitest/config"],
+    "outDir": "./node_modules/.tmp/tsnode"
   },
   "include": ["vite.config.ts"]
 }

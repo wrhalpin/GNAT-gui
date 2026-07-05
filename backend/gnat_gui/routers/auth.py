@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Request, Response
 
 from gnat_gui.auth.middleware import get_session_token
 from gnat_gui.auth.service import AuthService
+from gnat_gui.config import settings
 from gnat_gui.deps import Audit, CurrentUser, DB, SourceIP
 from gnat_gui.rate_limit import limiter
 from gnat_gui.schemas.auth import LoginRequest, MeResponse, SessionResponse
@@ -26,9 +27,9 @@ def login(
         "session",
         session.token,
         httponly=True,
-        secure=True,
+        secure=settings.cookie_secure,
         samesite="lax",
-        max_age=int((session.expires_at - session.expires_at).total_seconds()) or 86400,
+        max_age=settings.session_expire_seconds,
     )
     return SessionResponse(
         user_id=user.id,
@@ -41,9 +42,9 @@ def login(
 @router.post("/logout")
 def logout(
     response: Response,
+    db: DB,
+    audit: Audit,
     token: str = Depends(get_session_token),
-    db: DB = Depends(),
-    audit: Audit = Depends(),
 ) -> dict:
     svc = AuthService(db, audit)
     svc.logout(token)

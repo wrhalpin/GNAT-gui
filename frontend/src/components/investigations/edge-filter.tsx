@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 export interface EdgeFilterState {
   types: Set<string>;
   minConfidence: number;

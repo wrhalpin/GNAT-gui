@@ -1,10 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/investigations/")({
-  component: InvestigationsIndex,
-});
-
-function InvestigationsIndex() {
+export function InvestigationsIndex() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">

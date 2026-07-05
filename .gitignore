@@ -24,6 +24,7 @@ coverage.xml
 node_modules/
 frontend/dist/
 frontend/.vite/
+*.tsbuildinfo
 
 # Generated — rebuilt on backend start
 frontend/src/api/generated.ts

@@ -1,13 +1,13 @@
-from fastapi import APIRouter, Query
-from sqlalchemy.orm import Session
+from typing import Any
 
-from gnat_gui.audit.service import AuditService
+from fastapi import APIRouter, Query
+
 from gnat_gui.audit.events import AuditAction
 from gnat_gui.auth.password import hash_password
 from gnat_gui.db.models.audit import AuditEvent
 from gnat_gui.db.models.role import Role
 from gnat_gui.db.models.user import User
-from gnat_gui.deps import Audit, CurrentUser, DB
+from gnat_gui.deps import Audit, DB
 from gnat_gui.rbac.decorators import require_permission
 from gnat_gui.rbac.permissions import Permission
 from gnat_gui.schemas.admin import (
@@ -26,7 +26,7 @@ def create_user(
     body: UserCreate,
     db: DB,
     audit: Audit,
-    current_user: CurrentUser = require_permission(Permission.ADMIN_USERS),
+    current_user: Any = require_permission(Permission.ADMIN_USERS),
 ) -> UserResponse:
     role = db.query(Role).filter_by(name=body.role).first()
     if not role:
@@ -60,7 +60,7 @@ def create_user(
 @router.get("/users", response_model=list[UserResponse])
 def list_users(
     db: DB,
-    current_user: CurrentUser = require_permission(Permission.ADMIN_USERS),
+    current_user: Any = require_permission(Permission.ADMIN_USERS),
 ) -> list[UserResponse]:
     users = db.query(User).all()
     return [
@@ -81,7 +81,7 @@ def update_user(
     body: UserUpdate,
     db: DB,
     audit: Audit,
-    current_user: CurrentUser = require_permission(Permission.ADMIN_USERS),
+    current_user: Any = require_permission(Permission.ADMIN_USERS),
 ) -> UserResponse:
     from fastapi import HTTPException, status
     user = db.query(User).filter_by(id=user_id).first()
@@ -116,7 +116,7 @@ def list_audit(
     db: DB,
     page: int = Query(1, ge=1),
     page_size: int = Query(50, ge=1, le=200),
-    current_user: CurrentUser = require_permission(Permission.AUDIT_READ),
+    current_user: Any = require_permission(Permission.AUDIT_READ),
 ) -> AuditListResponse:
     total = db.query(AuditEvent).count()
     events = (

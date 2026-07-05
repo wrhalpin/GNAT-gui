@@ -1,15 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { InvestigationList } from "@/components/analysis/investigation-list";
 import { useCreateInvestigation } from "@/api/queries/analysis";
 
-export const Route = createFileRoute("/analysis/")({
-  component: AnalysisIndex,
-});
-
 const STATUSES = ["", "OPEN", "IN_PROGRESS", "REVIEW", "CLOSED"];
 
-function AnalysisIndex() {
+export function AnalysisIndex() {
   const [status, setStatus] = useState("");
   const [showNew, setShowNew] = useState(false);
   const [title, setTitle] = useState("");

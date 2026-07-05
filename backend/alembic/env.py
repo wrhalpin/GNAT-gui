@@ -3,12 +3,17 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
+from gnat_gui.config import settings
 from gnat_gui.db.base import Base
-from gnat_gui.db.models import audit, investigation_owner, role, session, ui_state, user  # noqa: F401
+import gnat_gui.db.models  # noqa: F401  registers every ORM model on Base.metadata
 
 config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
+
+# Honor GNAT_GUI_DB_URL instead of the placeholder in alembic.ini, so migrations run
+# against the same database the app uses.
+config.set_main_option("sqlalchemy.url", settings.db_url)
 
 target_metadata = Base.metadata
 

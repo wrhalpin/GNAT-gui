@@ -1,11 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { api } from "@/api/client";
-
-export const Route = createFileRoute("/admin/audit")({
-  component: AuditPage,
-});
 
 interface AuditRow {
   id: string;
@@ -16,7 +11,7 @@ interface AuditRow {
   timestamp: string;
 }
 
-function AuditPage() {
+export function AuditPage() {
   const [page, setPage] = useState(1);
   const { data, isLoading } = useQuery<{ items: AuditRow[]; total: number; page: number }>({
     queryKey: ["admin", "audit", page],
