@@ -1,4 +1,5 @@
-import { useExpandNode } from "@/api/queries/investigations";
+import { useQueryClient } from "@tanstack/react-query";
+import { useExpandNode, GRAPH_KEY } from "@/api/queries/investigations";
 import type { GraphNode } from "@/api/queries/investigations";
 import { openJobStream } from "@/lib/sse";
 import { useState } from "react";
@@ -11,15 +12,36 @@ interface Props {
 
 export function NodeDetailDrawer({ node, investigationId, onClose }: Props) {
   const expand = useExpandNode(investigationId);
+  const qc = useQueryClient();
   const [expanding, setExpanding] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!node) return null;
 
   async function handleExpand() {
     if (!node) return;
+    setError(null);
     setExpanding(true);
-    const { job_id } = await expand.mutateAsync(node.id);
-    openJobStream(job_id, () => {}, () => setExpanding(false), () => setExpanding(false));
+    try {
+      const { job_id } = await expand.mutateAsync(node.id);
+      openJobStream(
+        job_id,
+        () => {},
+        () => {
+          // Refetch the graph only once the expand job has actually finished, so
+          // the newly discovered nodes/edges appear.
+          qc.invalidateQueries({ queryKey: [GRAPH_KEY, investigationId] });
+          setExpanding(false);
+        },
+        (msg) => {
+          setError(msg);
+          setExpanding(false);
+        }
+      );
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Expand failed");
+      setExpanding(false);
+    }
   }
 
   return (
@@ -46,6 +68,7 @@ export function NodeDetailDrawer({ node, investigationId, onClose }: Props) {
         >
           {expanding ? "Expanding..." : "Expand Node"}
         </button>
+        {error && <p className="text-xs text-destructive">{error}</p>}
       </div>
     </div>
   );

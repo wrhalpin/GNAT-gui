@@ -58,6 +58,10 @@ export function RuleEditor({ rule, onChange, onInsertText }: Props) {
       disposed = true;
       editorRef.current?.dispose();
     };
+    // Intentionally re-init only when the rule identity/engine changes. onChange
+    // (a stable setState) and onInsertText are captured once by design; the editor
+    // is not torn down on every content edit.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rule.id, rule.engine]);
 
   return <div ref={containerRef} className="h-full w-full" />;

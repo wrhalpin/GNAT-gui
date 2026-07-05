@@ -1,5 +1,5 @@
 import { useParams } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRule, useUpdateRule, usePromoteRule } from "@/api/queries/rules";
 import { RuleEditor } from "@/components/rules/rule-editor";
 import { PredicatePalette } from "@/components/rules/predicate-palette";
@@ -18,8 +18,17 @@ export function RuleDetailPage() {
   const [tab, setTab] = useState<Tab>("editor");
   const insertRef = useRef<((text: string) => void) | null>(null);
 
+  // Local working copy of the rule body. Edits update this in memory; the rule is
+  // only persisted when the user clicks Save — not on every keystroke.
+  const [draft, setDraft] = useState<string | null>(null);
+  useEffect(() => {
+    setDraft(rule?.content ?? null);
+  }, [rule?.id, rule?.content]);
+
   if (isLoading) return <p className="text-sm text-muted-foreground">Loading...</p>;
   if (!rule) return <p className="text-sm text-destructive">Rule not found</p>;
+
+  const dirty = draft !== null && draft !== rule.content;
 
   return (
     <div className="flex h-[calc(100vh-6rem)] flex-col gap-3">
@@ -35,10 +44,11 @@ export function RuleDetailPage() {
             </button>
           )}
           <button
-            onClick={() => update.mutate({ content: rule.content } as any)}
-            className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground"
+            onClick={() => update.mutate({ content: draft ?? rule.content })}
+            disabled={!dirty || update.isPending}
+            className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-50"
           >
-            Save
+            {update.isPending ? "Saving..." : dirty ? "Save" : "Saved"}
           </button>
         </div>
       </div>
@@ -57,7 +67,7 @@ export function RuleDetailPage() {
           <div className="flex-1 overflow-hidden rounded border">
             <RuleEditor
               rule={rule}
-              onChange={(content) => update.mutate({ content } as any)}
+              onChange={setDraft}
               onInsertText={(fn) => { insertRef.current = fn; }}
             />
           </div>

@@ -1,14 +1,14 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-from fastapi.testclient import TestClient
 
 from gnat_gui.main import create_app
+from tests.conftest import CSRFClient
 
 
 @pytest.fixture
 def client():
-    return TestClient(create_app(), raise_server_exceptions=True)
+    return CSRFClient(create_app(), raise_server_exceptions=True)
 
 
 def test_login_calls_auth_service(client):

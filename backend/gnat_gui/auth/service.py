@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from gnat_gui.auth.password import verify_password
+from gnat_gui.auth.password import dummy_verify, verify_password
 from gnat_gui.audit.events import AuditAction
 from gnat_gui.audit.service import AuditService
 from gnat_gui.config import settings
@@ -22,10 +22,18 @@ class AuthService:
         self, username: str, password: str, source_ip: str | None = None
     ) -> tuple[User, UserSession]:
         user = self._db.query(User).filter_by(username=username, is_active=True).first()
-        if not user or not verify_password(password, user.hashed_password):
+        if not user:
+            # Equalize timing with the real-verification path so response latency
+            # doesn't disclose whether the username exists.
+            dummy_verify()
+            credentials_ok = False
+        else:
+            credentials_ok = verify_password(password, user.hashed_password)
+        if not user or not credentials_ok:
             self._audit.record(
                 AuditAction.LOGIN_FAILED, username=username, source_ip=source_ip
             )
+            self._db.commit()  # failed-login audit must survive the 401
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid credentials",
@@ -71,5 +79,15 @@ class AuthService:
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Session expired or invalid"
             )
         user = session.user
-        permissions = ROLE_PERMISSIONS.get(user.role.name, [])
+        if not user.is_active:
+            # Deactivation must cut off access immediately, even for sessions
+            # issued before the account was disabled.
+            session.revoked = True
+            self._db.commit()
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Account is deactivated"
+            )
+        # Role permissions are read from the seeded role row so DB edits take
+        # effect; the hardcoded map is only a fallback for unseeded roles.
+        permissions = user.role.permissions or ROLE_PERMISSIONS.get(user.role.name, [])
         return user, permissions

@@ -24,7 +24,7 @@ export function TestRunnerPanel({ ruleId }: Props) {
         job_id,
         (evt) => setEvents((prev) => [...prev, evt]),
         () => setRunning(false),
-        () => { setError("Stream error"); setRunning(false); }
+        (msg) => { setError(msg || "Stream error"); setRunning(false); }
       );
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed");

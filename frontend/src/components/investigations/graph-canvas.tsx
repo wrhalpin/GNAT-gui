@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ReactFlow,
   Background,
@@ -16,7 +16,14 @@ import { EdgeFilter, type EdgeFilterState } from "./edge-filter";
 import { MaterializeAction } from "./materialize-action";
 
 function toFlowNode(n: GraphNode): Node {
-  return { id: n.id, position: n.position, data: { label: n.label, ...n.data }, type: n.type };
+  // The STIX type is kept in `data` for the detail drawer and styling; it is NOT
+  // set as the React Flow node `type`, since we register no custom nodeTypes and
+  // doing so would make React Flow warn and fall back to an error node.
+  return {
+    id: n.id,
+    position: n.position,
+    data: { label: n.label, stixType: n.type, ...n.data },
+  };
 }
 
 function toFlowEdge(e: GraphEdge): Edge {
@@ -38,17 +45,35 @@ export function GraphCanvas({ investigationId }: { investigationId: string }) {
     minConfidence: 0,
   });
 
-  const rawNodes = graph?.nodes ?? [];
-  const rawEdges = graph?.edges ?? [];
+  const rawNodes = useMemo(() => graph?.nodes ?? [], [graph]);
+  const rawEdges = useMemo(() => graph?.edges ?? [], [graph]);
 
-  const filteredEdges = rawEdges.filter(
-    (e) => filter.types.has(e.type) && e.confidence >= filter.minConfidence
+  const filteredEdges = useMemo(
+    () =>
+      rawEdges.filter(
+        (e) => filter.types.has(e.type) && e.confidence >= filter.minConfidence
+      ),
+    [rawEdges, filter]
   );
 
-  const [nodes, , onNodesChange] = useNodesState(rawNodes.map(toFlowNode));
-  const [edges, , onEdgesChange] = useEdgesState(filteredEdges.map(toFlowEdge));
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
-  const allEdgeTypes = [...new Set(rawEdges.map((e) => e.type))];
+  // useNodesState/useEdgesState only seed from their initial argument; the query
+  // resolves after mount, so the data must be pushed into React Flow state here —
+  // otherwise the canvas stays permanently empty and the edge filter is inert.
+  useEffect(() => {
+    setNodes(rawNodes.map(toFlowNode));
+  }, [rawNodes, setNodes]);
+
+  useEffect(() => {
+    setEdges(filteredEdges.map(toFlowEdge));
+  }, [filteredEdges, setEdges]);
+
+  const allEdgeTypes = useMemo(
+    () => [...new Set(rawEdges.map((e) => e.type))],
+    [rawEdges]
+  );
 
   const onNodeClick = useCallback(
     (_: React.MouseEvent, node: Node) => {

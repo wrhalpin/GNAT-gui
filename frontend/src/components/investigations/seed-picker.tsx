@@ -38,7 +38,7 @@ export function SeedPicker({ onComplete }: Props) {
           }
         },
         () => setRunning(false),
-        () => { setError("Build failed"); setRunning(false); }
+        (msg) => { setError(msg || "Build failed"); setRunning(false); }
       );
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed");

@@ -57,10 +57,19 @@ def gap_detection_job(payload: dict, progress_cb, cancel) -> dict:
 @job("report_draft")
 def report_draft_job(payload: dict, progress_cb, cancel) -> dict:
     from gnat.analysis.copilot.drafting import ReportDraftingAssistant  # type: ignore[import]
-    import os
     from anthropic import Anthropic  # type: ignore[import]
-    client = Anthropic(api_key=os.environ.get("GNAT_GUI_LLM_API_KEY", ""))
-    assistant = ReportDraftingAssistant(llm_client=client)
+
+    from gnat_gui.config import settings
+
+    if not settings.llm_api_key:
+        raise RuntimeError(
+            "LLM not configured: set GNAT_GUI_LLM_API_KEY to enable report drafting"
+        )
+    client = Anthropic(api_key=settings.llm_api_key)
+    try:
+        assistant = ReportDraftingAssistant(llm_client=client, model=settings.llm_model)
+    except TypeError:  # older gnat cores take no model kwarg
+        assistant = ReportDraftingAssistant(llm_client=client)
     result = assistant.draft_with_progress(
         report=payload["report"],
         progress_callback=lambda p, msg: progress_cb(p, msg),

@@ -1,11 +1,13 @@
 from typing import Any
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query, status
+from sqlalchemy.exc import IntegrityError
 
 from gnat_gui.audit.events import AuditAction
 from gnat_gui.auth.password import hash_password
 from gnat_gui.db.models.audit import AuditEvent
 from gnat_gui.db.models.role import Role
+from gnat_gui.db.models.session import UserSession
 from gnat_gui.db.models.user import User
 from gnat_gui.deps import Audit, DB
 from gnat_gui.rbac.decorators import require_permission
@@ -30,7 +32,6 @@ def create_user(
 ) -> UserResponse:
     role = db.query(Role).filter_by(name=body.role).first()
     if not role:
-        from fastapi import HTTPException, status
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Unknown role: {body.role}")
 
     user = User(
@@ -39,7 +40,14 @@ def create_user(
         role_id=role.id,
     )
     db.add(user)
-    db.flush()
+    try:
+        db.flush()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Username already exists: {body.username}",
+        )
     audit.record(
         AuditAction.USER_CREATED,
         user_id=current_user.id,
@@ -83,10 +91,10 @@ def update_user(
     audit: Audit,
     current_user: Any = require_permission(Permission.ADMIN_USERS),
 ) -> UserResponse:
-    from fastapi import HTTPException, status
     user = db.query(User).filter_by(id=user_id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    deactivating = body.is_active is False and user.is_active
     if body.role is not None:
         role = db.query(Role).filter_by(name=body.role).first()
         if not role:
@@ -94,8 +102,13 @@ def update_user(
         user.role_id = role.id
     if body.is_active is not None:
         user.is_active = body.is_active
+    if deactivating:
+        # Cut off access immediately: revoke every live session for this user.
+        db.query(UserSession).filter_by(user_id=user.id, revoked=False).update(
+            {"revoked": True}
+        )
     audit.record(
-        AuditAction.USER_UPDATED,
+        AuditAction.USER_DEACTIVATED if deactivating else AuditAction.USER_UPDATED,
         user_id=current_user.id,
         username=current_user.username,
         target_id=user.id,

@@ -23,6 +23,8 @@ class AuditAction(StrEnum):
     RULE_TESTED = "rule.tested"
     RULE_PROMOTED = "rule.promoted"
 
+    GAP_DETECTION_RUN = "analysis.gap_detection_run"
+
     REPORT_CREATED = "report.created"
     REPORT_PUBLISHED = "report.published"
 

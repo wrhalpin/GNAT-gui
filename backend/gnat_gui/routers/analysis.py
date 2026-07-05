@@ -60,28 +60,15 @@ def get_timeline(investigation_id: str, db: DB, current_user: CurrentUser, audit
 
 @router.post("/investigations/{investigation_id}/gap-detection")
 def submit_gap_detection(investigation_id: str, body: dict, db: DB, current_user: CurrentUser, audit: Audit):
-    from gnat_gui.services.analysis_facade import AnalysisFacade  # noqa
-    from gnat.jobs import JobRunner  # type: ignore[import]
-    from gnat.jobs.store import JobStore  # type: ignore[import]
-    store = JobStore()
-    runner = JobRunner(store)
-    job = runner.submit(
-        "gap_detection",
-        submitted_by=current_user.id,
-        request_payload={"investigation_id": investigation_id, "hypothesis": body.get("hypothesis")},
+    job_id = _facade(db, current_user, audit).submit_gap_detection(
+        investigation_id, body.get("hypothesis")
     )
-    return {"job_id": job.id}
+    return {"job_id": job_id}
 
 
 @router.post("/investigations/{investigation_id}/draft-report")
 def submit_draft_report(investigation_id: str, body: dict, db: DB, current_user: CurrentUser, audit: Audit):
-    from gnat.jobs import JobRunner  # type: ignore[import]
-    from gnat.jobs.store import JobStore  # type: ignore[import]
-    store = JobStore()
-    runner = JobRunner(store)
-    job = runner.submit(
-        "report_draft",
-        submitted_by=current_user.id,
-        request_payload={"investigation_id": investigation_id, "report": body.get("report")},
+    job_id = _facade(db, current_user, audit).submit_draft_report(
+        investigation_id, body.get("report")
     )
-    return {"job_id": job.id}
+    return {"job_id": job_id}

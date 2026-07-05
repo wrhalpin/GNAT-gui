@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { api } from "@/api/client";
 
 export interface Seed {
@@ -28,7 +28,8 @@ export interface Graph {
   edges: GraphEdge[];
 }
 
-const KEY = "graph-investigations";
+export const GRAPH_KEY = "graph-investigations";
+const KEY = GRAPH_KEY;
 
 export function useSubmitBuild() {
   return useMutation({
@@ -46,13 +47,14 @@ export function useGraph(investigationId: string) {
 }
 
 export function useExpandNode(investigationId: string) {
-  const qc = useQueryClient();
+  // NOTE: no onSuccess invalidation here — the POST only returns a job_id; the new
+  // nodes don't exist until the async job finishes. The graph is refetched when the
+  // SSE `done` event arrives (see NodeDetailDrawer).
   return useMutation({
     mutationFn: (nodeId: string) =>
       api.post<{ job_id: string }>(`/api/investigations/${investigationId}/expand`, {
         node_id: nodeId,
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: [KEY, investigationId] }),
   });
 }
 

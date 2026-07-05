@@ -11,7 +11,7 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
 @router.post("/login", response_model=SessionResponse)
-@limiter.limit("10/minute")
+@limiter.limit(lambda: settings.login_rate_limit)
 def login(
     request: Request,
     body: LoginRequest,
