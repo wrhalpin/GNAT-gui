@@ -13,6 +13,7 @@ import "@xyflow/react/dist/style.css";
 import { useGraph, type GraphNode, type GraphEdge } from "@/api/queries/investigations";
 import { NodeDetailDrawer } from "./node-detail-drawer";
 import { EdgeFilter, type EdgeFilterState } from "./edge-filter";
+import { CorrelationLegend } from "./correlation-legend";
 import { MaterializeAction } from "./materialize-action";
 
 function toFlowNode(n: GraphNode): Node {
@@ -56,6 +57,7 @@ export function GraphCanvas({ investigationId }: { investigationId: string }) {
     [rawEdges, filter]
   );
 
+  const [showLegend, setShowLegend] = useState(false);
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
@@ -100,6 +102,16 @@ export function GraphCanvas({ investigationId }: { investigationId: string }) {
 
       <div className="absolute left-3 top-3 w-56">
         <EdgeFilter allTypes={allEdgeTypes} value={filter} onChange={setFilter} />
+      </div>
+
+      <div className="absolute right-3 top-3 flex flex-col items-end gap-2">
+        <button
+          onClick={() => setShowLegend((v) => !v)}
+          className="rounded border bg-background px-3 py-1.5 text-sm shadow-sm hover:bg-accent"
+        >
+          {showLegend ? "Hide legend" : "Legend"}
+        </button>
+        {showLegend && <CorrelationLegend />}
       </div>
 
       <div className="absolute bottom-3 left-3">

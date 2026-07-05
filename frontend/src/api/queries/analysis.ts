@@ -88,3 +88,34 @@ export function useTimeline(investigationId: string) {
     enabled: !!investigationId,
   });
 }
+
+export function useSubmitGapDetection(investigationId: string) {
+  return useMutation({
+    mutationFn: (hypothesis?: string) =>
+      api.post<{ job_id: string }>(
+        `/api/analysis/investigations/${investigationId}/gap-detection`,
+        { hypothesis }
+      ),
+  });
+}
+
+export interface DraftReportRequest {
+  report_type: string;
+  tlp: string;
+}
+
+export function useSubmitDraftReport(investigationId: string) {
+  return useMutation({
+    mutationFn: (report: DraftReportRequest) =>
+      api.post<{ job_id: string }>(
+        `/api/analysis/investigations/${investigationId}/draft-report`,
+        { report }
+      ),
+  });
+}
+
+export function usePublishReport() {
+  return useMutation({
+    mutationFn: (reportId: string) => api.post(`/api/analysis/reports/${reportId}/publish`),
+  });
+}
